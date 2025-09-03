@@ -74,11 +74,20 @@ export const PollDetail = () => {
     }, 500);
   }, [id]);
 
+  /**
+   * @onSubmit Enhanced vote submission with better validation and UX
+   * Handles form submission, API calls, and optimistic updates
+   */
   const onSubmit = async (data) => {
     setSubmitting(true);
     setError(null);
 
     try {
+      // Enhanced validation before API call
+      if (!data.selectedOption) {
+        throw new Error('Please select an option before submitting');
+      }
+
       // Simulate API call to submit vote with better error handling
       const response = await fetch(`/api/polls/${id}/votes`, {
         method: 'POST',
@@ -89,6 +98,13 @@ export const PollDetail = () => {
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Poll not found or has been removed');
+        } else if (response.status === 400) {
+          throw new Error('Invalid vote data. Please try again.');
+        } else if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -131,11 +147,19 @@ export const PollDetail = () => {
     }
   };
 
+  /**
+   * @calculatePercentage Enhanced percentage calculation with better precision
+   */
   const calculatePercentage = (votes, total) => {
     if (total === 0) return 0;
-    return Math.round((votes / total) * 100);
+    const percentage = (votes / total) * 100;
+    // Round to 1 decimal place for better precision
+    return Math.round(percentage * 10) / 10;
   };
 
+  /**
+   * @getWinningOption Find the option with the most votes
+   */
   const getWinningOption = () => {
     if (!poll || poll.options.length === 0) return null;
     return poll.options.reduce((prev, current) => 
@@ -143,9 +167,13 @@ export const PollDetail = () => {
     );
   };
 
+  /**
+   * @formatVoteCount Enhanced vote count formatting with better pluralization
+   */
   const formatVoteCount = (count) => {
+    if (count === 0) return 'No votes';
     if (count === 1) return '1 vote';
-    return `${count} votes`;
+    return `${count.toLocaleString()} votes`;
   };
 
   if (loading) {
@@ -238,7 +266,7 @@ export const PollDetail = () => {
               </Button>
             </form>
           ) : (
-            // Results View
+            // #results-display Enhanced results view with better styling and animations
             <div className="space-y-6">
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-green-600 mb-2">
@@ -259,23 +287,31 @@ export const PollDetail = () => {
                   .sort((a, b) => b.votes - a.votes)
                   .map((option, index) => {
                     const percentage = calculatePercentage(option.votes, poll.totalVotes);
+                    const isWinning = index === 0 && option.votes > 0;
                     return (
                       <div key={option.id} className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="font-medium">
-                            {index === 0 && option.votes > 0 && '🏆 '}
+                          <span className={`font-medium ${isWinning ? 'text-blue-600' : 'text-gray-900'}`}>
+                            {isWinning && '🏆 '}
                             {option.text}
                           </span>
                           <span className="text-sm text-gray-600">
                             {formatVoteCount(option.votes)} ({percentage}%)
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                           <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                            className={`h-3 rounded-full transition-all duration-700 ease-out ${
+                              isWinning ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-blue-500'
+                            }`}
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
+                        {isWinning && percentage > 0 && (
+                          <div className="text-xs text-blue-600 font-medium">
+                            Winner! 🎉
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -285,7 +321,7 @@ export const PollDetail = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => navigate('/')}
-                  className="w-full"
+                  className="w-full hover:bg-gray-50 transition-colors"
                 >
                   View Other Polls
                 </Button>
