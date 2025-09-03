@@ -1,0 +1,38 @@
+# Polling App Project Rules
+
+## Project Structure
+This project follows the patterns from the existing REST API demo with two approaches:
+- **Simple**: Single-file approach (like `server.js` in root)
+- **Advanced**: Modular architecture (like `run-b-chat-only/` directory)
+
+## Key Rules for AI Assistant
+
+### 1. Form Libraries & UI
+- **Always use react-hook-form** for form management and validation
+- **Use shadcn/ui components** for consistent styling (Button, Input, Card, etc.)
+- **Implement Zod validation** for both client and server-side validation
+- **Follow Tailwind CSS** utility-first approach for styling
+
+### 2. API Patterns
+- **Use consistent response format**: `{ success: boolean, data: any, message?: string }`
+- **Follow RESTful patterns**: GET, POST, PUT, DELETE with proper HTTP status codes
+- **Include validation middleware** for all inputs with comprehensive error handling
+- **Add security middleware**: helmet, CORS, rate limiting
+
+### 3. Project Structure
+- **Use kebab-case for directories** (`polling-app/`, `run-b-chat-only/`)
+- **Use camelCase for JavaScript files** (`server.js`, `validation.js`)
+- **Group related functionality** in subdirectories (`/src/routes`, `/src/middleware`, `/src/config`)
+- **Include JSDoc comments** for all functions
+
+### 4. Polling App Specific
+- **Poll structure**: `id`, `question`, `options[]`, `createdAt`, `updatedAt`, `status`
+- **API endpoints**: `/polls`, `/polls/:id`, `/polls/:id/votes`
+- **Use Supabase** for authentication and database operations
+- **Implement real-time updates** with WebSocket integration
+
+### 5. Code Quality
+- **Always implement proper error handling** with try-catch blocks
+- **Validate all inputs** with appropriate middleware
+- **Include loading states** for form submission
+- **Add comprehensive logging** for debugging and monitoring
